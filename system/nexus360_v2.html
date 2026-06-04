@@ -9354,23 +9354,27 @@ async function iniciarSistema() {
   }
 
   // Buscar company_id
+  const DROGARIA_ID = '720e05bf-16de-428d-b6f1-1cb122a55be9';
   const { data: cu, error: cuErr } = await db.from('company_users').select('company_id,role').eq('user_id', user.id).single();
+
   if (cuErr || !cu) {
-    // Fallback: usa company_id padrão (Drogaria 208 Sul)
-    console.warn('company_users não encontrado — usando company_id padrão');
-    state.companyId = '720e05bf-16de-428d-b6f1-1cb122a55be9';
-  } else {
-    state.companyId = cu.company_id;
-    // Drogaria 208 Sul nunca é bloqueada
-    const DROGARIA_ID = '720e05bf-16de-428d-b6f1-1cb122a55be9';
-    if (cu.company_id !== DROGARIA_ID) {
-      const assnCheck = await verificarAssinatura(cu.company_id);
-      if (!assnCheck.ok) {
-        await db.auth.signOut();
-        hideLoading();
-        mostrarTelaLogin(assnCheck.msg);
-        return;
-      }
+    // Sem company_users → usuário novo que ainda não foi ativado
+    await db.auth.signOut();
+    hideLoading();
+    mostrarTelaLogin('Acesso pendente de ativação. Após confirmar o pagamento, seu acesso é liberado em até 24h. Dúvidas: WhatsApp (63) 98108-0070.');
+    return;
+  }
+
+  state.companyId = cu.company_id;
+
+  // Drogaria 208 Sul nunca é bloqueada
+  if (cu.company_id !== DROGARIA_ID) {
+    const assnCheck = await verificarAssinatura(cu.company_id);
+    if (!assnCheck.ok) {
+      await db.auth.signOut();
+      hideLoading();
+      mostrarTelaLogin(assnCheck.msg);
+      return;
     }
   }
 
