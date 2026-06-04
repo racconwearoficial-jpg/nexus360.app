@@ -9310,7 +9310,7 @@ async function verificarAssinatura(companyId) {
   try {
     const { data, error } = await db
       .from('subscriptions')
-      .select('status,current_period_end')
+      .select('status,expires_at')
       .eq('company_id', companyId)
       .eq('status', 'active')
       .order('created_at', { ascending: false })
@@ -9326,8 +9326,8 @@ async function verificarAssinatura(companyId) {
       return { ok: false, msg: 'Sua assinatura está suspensa. Entre em contato pelo WhatsApp (63) 98108-0070.' };
     }
 
-    if (data.current_period_end) {
-      const expira = new Date(data.current_period_end);
+    if (data.expires_at) {
+      const expira = new Date(data.expires_at);
       expira.setHours(23, 59, 59);
       if (expira < new Date()) {
         const dias = Math.floor((new Date() - expira) / 86400000);
@@ -9339,7 +9339,6 @@ async function verificarAssinatura(companyId) {
 
     return { ok: true };
   } catch(e) {
-    // Em caso de erro de rede, deixa entrar (não bloqueia por falha técnica)
     return { ok: true };
   }
 }
