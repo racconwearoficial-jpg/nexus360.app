@@ -8440,6 +8440,11 @@ function confirmarSenhaAdmin() {
   }
   fecharModalSenhaAdmin();
   definirModo('admin');
+  // Forçar navegação para dashboard admin
+  setTimeout(() => {
+    const dashNav = document.querySelector('.nav-item[onclick*="dashboard"]');
+    if (dashNav) dashNav.click();
+  }, 100);
 }
 
 function recuperarSenhaAdmin() {
@@ -8452,6 +8457,11 @@ function recuperarSenhaAdmin() {
 function definirModo(modo) {
   MODO_ATUAL = modo;
   aplicarModo(modo);
+  // Sincronizar botões do drawer mobile
+  const mBtnFunc = document.getElementById('mBtnFunc');
+  const mBtnAdmin = document.getElementById('mBtnAdmin');
+  if (mBtnFunc) mBtnFunc.classList.toggle('active', modo !== 'admin');
+  if (mBtnAdmin) mBtnAdmin.classList.toggle('active', modo === 'admin');
   if (modo !== 'admin') { const vr = document.getElementById('vendaRapidaBar'); if(vr) vr.style.display='none'; }
   if(typeof filterClients==='function') filterClients();
   if(typeof renderVendas==='function') renderVendas();
@@ -11874,7 +11884,7 @@ function rsvWppEnviar() {
 function mOpen() {
   document.getElementById('mDrawer').classList.add('open');
   document.getElementById('mOverlay').classList.add('open');
-  const modo = 'funcionario';
+  const modo = (typeof MODO_ATUAL !== 'undefined') ? MODO_ATUAL : 'funcionario';
   document.getElementById('mBtnFunc').classList.toggle('active', modo !== 'admin');
   document.getElementById('mBtnAdmin').classList.toggle('active', modo === 'admin');
   mSyncDrawerNav();
