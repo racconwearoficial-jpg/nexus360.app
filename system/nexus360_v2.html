@@ -2761,7 +2761,14 @@ async function loadConfig() {
   if (error && error.code !== 'PGRST116') throw error;
   state.config = data || {};
   // Sincroniza categorias do Supabase → localStorage
-  // categorias vêm só do Supabase — sem localStorage
+  if (state.config.categorias_personalizadas) {
+    try {
+      const catsRemoto = JSON.parse(state.config.categorias_personalizadas);
+      const catsLocal  = JSON.parse(state.config?.categorias_personalizadas || '[]');
+      const merged = [...new Set([...catsLocal, ...catsRemoto])];
+      
+    } catch(e) {}
+  }
   applyConfig();
 }
 
@@ -2784,6 +2791,12 @@ function applyConfig() {
   }
   // Salva data de início do ranking no state
   // Carregar senha admin do Supabase
+  if (c.senha_admin) {
+    SENHA_ADMIN = c.senha_admin;
+    localStorage.setItem('nexus360_senha_admin', c.senha_admin);
+  } else {
+    SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
+  }
   if (c.senha_admin) {
     SENHA_ADMIN = c.senha_admin;
     localStorage.setItem('nexus360_senha_admin', c.senha_admin);
@@ -3914,21 +3927,24 @@ function vdToggleModo() {
 // CATEGORIAS
 // ══════════════════════════════════════════════════════════════════════════════
 function getCategorias() {
-  // Só usa Supabase — sem localStorage
+  // Apenas categorias definidas pelo empresário — sem padrões hardcoded
+  
   const doConfig = JSON.parse(state.config?.categorias_personalizadas || '[]');
   const dosBanco = [...new Set((state.itens||[]).map(i => i.categoria).filter(Boolean))];
+  // Inclui categorias das regras de pontuação configuradas pelo empresário
   const dasPts   = (state.loyaltyCatRules || []).map(r => r.category).filter(Boolean);
   return [...new Set([...doConfig, ...dosBanco, ...dasPts])].sort();
 }
 
 function salvarCategoria(cat) {
-  // Só salva no Supabase
+  // Salva no localStorage
   const cats = JSON.parse(state.config?.categorias_personalizadas || '[]');
   if (!cats.includes(cat)) {
     cats.push(cat);
-    if (state.config) state.config.categorias_personalizadas = JSON.stringify(cats);
-    _syncCatsSupabase(cats);
+    
   }
+  // Salva no Supabase (config)
+  _syncCatsSupabase(cats);
 }
 
 async function _syncCatsSupabase(cats) {
@@ -3941,7 +3957,7 @@ async function _syncCatsSupabase(cats) {
 function removerCategoria(cat) {
   let cats = JSON.parse(state.config?.categorias_personalizadas || '[]');
   cats = cats.filter(c => c !== cat);
-  ;
+  
   _syncCatsSupabase(cats);
 
   const emUso = (state.itens||[]).filter(i => i.categoria === cat);
@@ -7793,6 +7809,7 @@ async function saveConfig() {
     dias_inativo:     parseInt(document.getElementById('cfg-inativo').value) || 30,
     expira_pontos:    parseInt(document.getElementById('cfg-expira-pontos').value) || 365,
     max_venda_func:   parseFloat(document.getElementById('cfg-max-venda-func').value) || null,
+    senha_admin:      SENHA_ADMIN || 'admin123',
     senha_admin:      SENHA_ADMIN || 'admin123',
     ranking_inicio:    state.rankingInicio   || null,
     ranking_inicio_ts: state.rankingInicioTs  || 0,
@@ -13239,7 +13256,7 @@ function fnRenderHistorico() {
     return true;
   }).forEach(v => {
     const cli = (state.clientes||[]).find(c=>c.id==v.cliente_id);
-    eventos.push({ ts: v.data+'T12:00:00', icon:'$', cor:'rgba(16,185,129,.15)', txt:`<strong>${v.funcionario||''}</strong> registrou venda de <strong>${fnFmt(v.valor)}</strong>${cli?' para '+cli.nome:''}`, sub: v.itens||'' });
+    eventos.push({ ts: v.created_at || v.data+'T12:00:00', icon:'$', cor:'rgba(16,185,129,.15)', txt:`<strong>${v.funcionario||''}</strong> registrou venda de <strong>${fnFmt(v.valor)}</strong>${cli?' para '+cli.nome:''}`, sub: v.itens||'' });
   });
 
   // Follow-ups
