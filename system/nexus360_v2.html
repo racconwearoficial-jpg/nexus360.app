@@ -2789,6 +2789,10 @@ function applyConfig() {
     } catch(e) { console.warn('fcfg parse error:', e); }
   }
   // Salva data de início do ranking no state
+  // Carregar ranking_config do Supabase no localStorage para uso local
+  if (c.ranking_config) {
+    try { localStorage.setItem('nexus360_rm_config', c.ranking_config); } catch(e) {}
+  }
   // Carregar senha admin do Supabase
   if (c.senha_admin) {
     SENHA_ADMIN = c.senha_admin;
@@ -5915,6 +5919,12 @@ function rmAdicionarPontos(cliId, pts) {
 }
 
 function rmGetConfig() {
+  // Supabase (state.config) tem prioridade sobre localStorage
+  try {
+    if (state.config && state.config.ranking_config) {
+      return JSON.parse(state.config.ranking_config);
+    }
+  } catch(e) {}
   return JSON.parse(localStorage.getItem('nexus360_rm_config') || JSON.stringify({
     p1: { desc:'Kit de produtos', bonus:200 },
     p2: { desc:'Vale compras', bonus:100 },
@@ -5923,7 +5933,7 @@ function rmGetConfig() {
   }));
 }
 
-function rmSalvarConfig() {
+async function rmSalvarConfig() {
   const get = id => { const el = document.getElementById(id); return el ? el.value : ''; };
   const cfg = {
     p1: { desc:  get('rm-premio1-desc') || 'Kit de produtos',
@@ -5935,6 +5945,12 @@ function rmSalvarConfig() {
     duracao: parseInt(get('rm-duracao')) || 1,
   };
   try { localStorage.setItem('nexus360_rm_config', JSON.stringify(cfg)); } catch(e) {}
+  // Salvar no Supabase
+  if (state.companyId) {
+    const { error } = await db.from('configuracoes')
+      .upsert({ company_id: state.companyId, ranking_config: JSON.stringify(cfg) }, { onConflict: 'company_id' });
+    if (error) { toast('Erro ao salvar no servidor: ' + error.message, 'error'); return; }
+  }
   toast('Prêmios configurados!', 'success');
   renderRankingMensal();
 }
