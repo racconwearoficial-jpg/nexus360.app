@@ -9407,7 +9407,9 @@ async function iniciarSistema() {
   }
 
   esconderTelaLogin();
-  aplicarModo(localStorage.getItem('nexus360_modo') || 'funcionario');
+  // Sempre começa como funcionário — precisa digitar senha para virar admin
+  localStorage.setItem('nexus360_modo', 'funcionario');
+  aplicarModo('funcionario');
   fcfgAplicar(fcfgGet());
   await checkConnection();
   if (state.connected) {
