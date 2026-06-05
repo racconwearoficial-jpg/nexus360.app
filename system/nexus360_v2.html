@@ -2803,6 +2803,12 @@ function applyConfig() {
   } else {
     SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
   }
+  if (c.senha_admin) {
+    SENHA_ADMIN = c.senha_admin;
+    localStorage.setItem('nexus360_senha_admin', c.senha_admin);
+  } else {
+    SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
+  }
   state.rankingInicio   = c.ranking_inicio   || null;
   // Prioriza localStorage (salvo localmente ao encerrar) sobre Supabase
   // pois ranking_inicio_ts pode não existir como coluna no Supabase
@@ -7811,6 +7817,7 @@ async function saveConfig() {
     max_venda_func:   parseFloat(document.getElementById('cfg-max-venda-func').value) || null,
     senha_admin:      SENHA_ADMIN || 'admin123',
     senha_admin:      SENHA_ADMIN || 'admin123',
+    senha_admin:      SENHA_ADMIN || 'admin123',
     ranking_inicio:    state.rankingInicio   || null,
     ranking_inicio_ts: state.rankingInicioTs  || 0,
     msg_reativacao:   document.getElementById('cfg-msg-reativacao').value.trim() || null,
@@ -9775,12 +9782,12 @@ window.onload = async function() {
   /* Main layout */
   #main {
     margin-left: 0 !important;
-    padding-top: 54px !important;
+    padding-top: 62px !important;
   }
 
   /* Content padding */
   #content {
-    padding: 14px 13px 90px !important;
+    padding: 16px 13px 100px !important;
   }
 
   /* Prevent horizontal scroll */
