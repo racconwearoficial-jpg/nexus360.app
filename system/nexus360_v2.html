@@ -2553,7 +2553,6 @@ function setBtn(id, loading, label='Salvar') {
 }
 
 let SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
-let MODO_ATUAL = 'funcionario';
 
 // Tutorial removido — funções stub para evitar erros
 function miniTutMostrar(secao) {}
@@ -2761,14 +2760,7 @@ async function loadConfig() {
   if (error && error.code !== 'PGRST116') throw error;
   state.config = data || {};
   // Sincroniza categorias do Supabase → localStorage
-  if (state.config.categorias_personalizadas) {
-    try {
-      const catsRemoto = JSON.parse(state.config.categorias_personalizadas);
-      const catsLocal  = JSON.parse(localStorage.getItem('nexus360_categorias') || '[]');
-      const merged = [...new Set([...catsLocal, ...catsRemoto])];
-      localStorage.setItem('nexus360_categorias', JSON.stringify(merged));
-    } catch(e) {}
-  }
+  // categorias vêm só do Supabase — sem localStorage
   applyConfig();
 }
 
@@ -2871,7 +2863,7 @@ function renderDashboard() {
   renderInsightsFunc();
   verificarImportacao();
   // Re-aplica modo para garantir visibilidade correta após dados carregarem
-  aplicarModo(MODO_ATUAL);
+  aplicarModo(localStorage.getItem('nexus360_modo') || 'funcionario');
 }
 
 function renderBarChart() {
@@ -3626,7 +3618,7 @@ function renderClients(list) {
   }
 
   const isMobile = window.innerWidth <= 768;
-  const isAdmin  = MODO_ATUAL === 'admin';
+  const isAdmin  = localStorage.getItem('nexus360_modo') === 'admin';
   const gastoNum = c => parseFloat(String(c.total_gasto||'0').replace(/[^\d.]/g,''))||0;
   const todosOrdenados = [...state.clientes].sort((a,b)=>gastoNum(b)-gastoNum(a));
   const totalTodos = todosOrdenados.length;
@@ -3769,7 +3761,7 @@ function recuperarInativos() {
 }
 
 function filterClients() {
-  const isAdmin = MODO_ATUAL === 'admin';
+  const isAdmin = localStorage.getItem('nexus360_modo') === 'admin';
 
   // Thead dinâmico — alinha com tbody
   const thead = document.getElementById('clientTableHead');
@@ -3861,7 +3853,7 @@ function toggleVendaRapida() {
 
 function _verificarLimiteVenda(valor) {
   const mx = parseFloat(state.config?.max_venda_func) || 0;
-  if (mx > 0 && MODO_ATUAL !== 'admin' && parseFloat(valor) > mx) {
+  if (mx > 0 && localStorage.getItem('nexus360_modo') !== 'admin' && parseFloat(valor) > mx) {
     toast('Valor R$ ' + parseFloat(valor).toFixed(2) + ' acima do limite de R$ ' + mx.toFixed(2) + ' para funcionário. Solicite ao admin.', 'error');
     return true;
   }
@@ -3921,24 +3913,21 @@ function vdToggleModo() {
 // CATEGORIAS
 // ══════════════════════════════════════════════════════════════════════════════
 function getCategorias() {
-  // Apenas categorias definidas pelo empresário — sem padrões hardcoded
-  const salvas   = JSON.parse(localStorage.getItem('nexus360_categorias') || '[]');
+  // Só usa Supabase — sem localStorage
   const doConfig = JSON.parse(state.config?.categorias_personalizadas || '[]');
   const dosBanco = [...new Set((state.itens||[]).map(i => i.categoria).filter(Boolean))];
-  // Inclui categorias das regras de pontuação configuradas pelo empresário
   const dasPts   = (state.loyaltyCatRules || []).map(r => r.category).filter(Boolean);
-  return [...new Set([...salvas, ...doConfig, ...dosBanco, ...dasPts])].sort();
+  return [...new Set([...doConfig, ...dosBanco, ...dasPts])].sort();
 }
 
 function salvarCategoria(cat) {
-  // Salva no localStorage
-  const cats = JSON.parse(localStorage.getItem('nexus360_categorias') || '[]');
+  // Só salva no Supabase
+  const cats = JSON.parse(state.config?.categorias_personalizadas || '[]');
   if (!cats.includes(cat)) {
     cats.push(cat);
-    localStorage.setItem('nexus360_categorias', JSON.stringify(cats));
+    if (state.config) state.config.categorias_personalizadas = JSON.stringify(cats);
+    _syncCatsSupabase(cats);
   }
-  // Salva no Supabase (config)
-  _syncCatsSupabase(cats);
 }
 
 async function _syncCatsSupabase(cats) {
@@ -3949,9 +3938,9 @@ async function _syncCatsSupabase(cats) {
   } catch(e) { /* silencioso */ }
 }
 function removerCategoria(cat) {
-  let cats = JSON.parse(localStorage.getItem('nexus360_categorias') || '[]');
+  let cats = JSON.parse(state.config?.categorias_personalizadas || '[]');
   cats = cats.filter(c => c !== cat);
-  localStorage.setItem('nexus360_categorias', JSON.stringify(cats));
+  ;
   _syncCatsSupabase(cats);
 
   const emUso = (state.itens||[]).filter(i => i.categoria === cat);
@@ -4414,7 +4403,7 @@ async function saveCliente() {
     const conf = confirm('Já existe um cliente com o nome "' + dupNome.nome + '". Deseja cadastrar mesmo assim?');
     if (!conf) { setBtn('btnSaveCliente', false); return; }
   }
-  const isAdmin = MODO_ATUAL === 'admin';
+  const isAdmin = localStorage.getItem('nexus360_modo') === 'admin';
   const clienteExistente = id ? state.clientes.find(c => String(c.id) === String(id)) : null;
   const payload = {
     nome,
@@ -4781,7 +4770,7 @@ function renderVendas() {
     const num     = tel ? (tel.startsWith('55') ? tel : '55'+tel) : '';
     const neg     = state.config?.nome_negocio || 'nossa loja';
     const btnWpp  = num ? `<button class="btn-wpp" style="font-size:11px;padding:3px 8px;border-radius:5px;border:none;cursor:pointer" onclick="abrirModalWppVenda(${v.id})">WA</button>` : '';
-    const btnDel  = MODO_ATUAL === 'admin' ? `<button class="btn btn-red" style="padding:4px 8px;font-size:11px;margin-left:4px" onclick="deleteVenda(${v.id})">Excluir</button>` : '';
+    const btnDel  = localStorage.getItem('nexus360_modo') === 'admin' ? `<button class="btn btn-red" style="padding:4px 8px;font-size:11px;margin-left:4px" onclick="deleteVenda(${v.id})">Excluir</button>` : '';
     return `<tr>
       <td style="color:var(--text1)">${nome}</td>
       <td style="color:var(--text2)">R$ ${parseFloat(v.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
@@ -5387,7 +5376,7 @@ function renderItens() {
           <div style="font-size:13px;color:var(--text1)">${i.nome}</div>
           <div style="font-size:11px;color:var(--text3)">${tipo==='zero'?'Sem estoque':'Estoque baixo: '+i.estoque+' un'}</div>
         </div>
-        ${MODO_ATUAL === 'admin' ? '<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="abrirReposicao('+i.id+')">Repor estoque</button>' : ''}
+        ${localStorage.getItem('nexus360_modo') === 'admin' ? '<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="abrirReposicao('+i.id+')">Repor estoque</button>' : ''}
       </div>`).join('');
   }
 
@@ -5418,7 +5407,7 @@ function renderItens() {
       <td>${estTxt}</td>
       <td>${giroHtml}</td>
       <td style="display:flex;gap:6px">
-        ${MODO_ATUAL === 'admin' ? `<button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editItem(${i.id})">Editar</button>
+        ${localStorage.getItem('nexus360_modo') === 'admin' ? `<button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editItem(${i.id})">Editar</button>
         <button class="btn btn-red" style="padding:4px 8px;font-size:11px" onclick="deleteItem(${i.id},'${(i.nome||'').replace(/'/g,"\'")}')">Excluir</button>` : ''}
       </td>
     </tr>`;
@@ -8375,7 +8364,7 @@ function aplicarModo(modo) {
 
 function abrirModalSenhaAdmin() {
   // Se já está em modo admin, só volta para funcionário
-  if (MODO_ATUAL === 'admin') {
+  if (localStorage.getItem('nexus360_modo') === 'admin') {
     definirModo('funcionario'); return;
   }
   const modal = document.getElementById('modalSenhaAdmin');
@@ -8422,7 +8411,7 @@ function recuperarSenhaAdmin() {
 }
 
 function definirModo(modo) {
-  MODO_ATUAL = modo;
+  localStorage.setItem('nexus360_modo', modo);
   aplicarModo(modo);
   if (modo !== 'admin') { const vr = document.getElementById('vendaRapidaBar'); if(vr) vr.style.display='none'; }
   if(typeof filterClients==='function') filterClients();
@@ -8468,7 +8457,7 @@ function _chatAdicionarMsg(tipo, texto) {
 
 function _chatContexto() {
   const paginaAtual    = localStorage.getItem('nexus360_pagina') || 'dashboard';
-  const modo           = MODO_ATUAL;
+  const modo           = localStorage.getItem('nexus360_modo') || 'funcionario';
   const totalClientes  = state.clientes.length;
   const inativos       = state.clientes.filter(c => c.status === 'inativo').length;
   const vips           = state.clientes.filter(c => c.status === 'vip').length;
@@ -9392,7 +9381,7 @@ async function iniciarSistema() {
   }
 
   esconderTelaLogin();
-  MODO_ATUAL = 'funcionario';
+  localStorage.removeItem('nexus360_modo');
   aplicarModo('funcionario');
   fcfgAplicar(fcfgGet());
   await checkConnection();
@@ -11847,7 +11836,7 @@ function rsvWppEnviar() {
 function mOpen() {
   document.getElementById('mDrawer').classList.add('open');
   document.getElementById('mOverlay').classList.add('open');
-  const modo = MODO_ATUAL;
+  const modo = localStorage.getItem('nexus360_modo') || 'funcionario';
   document.getElementById('mBtnFunc').classList.toggle('active', modo !== 'admin');
   document.getElementById('mBtnAdmin').classList.toggle('active', modo === 'admin');
   mSyncDrawerNav();
@@ -11891,7 +11880,7 @@ function mNav(page) {
 }
 
 function mSyncDrawerNav() {
-  const modo = MODO_ATUAL;
+  const modo = localStorage.getItem('nexus360_modo') || 'funcionario';
   const isAdmin = modo === 'admin';
   // Pages only for admin
   const adminOnly = ['campanhas','crm','devedores','calendario','relatorios','config','funcionarios'];
