@@ -446,7 +446,7 @@ input:checked+.slider:before{transform:translateX(18px);background:#fff}
 </div>
 
 <!-- MODAL SENHA ADMIN -->
-<div id="modalSenhaAdmin" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;touch-action:none">
+<div id="modalSenhaAdmin" style="display:none;position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
   <div style="background:#0D1829;border:1px solid rgba(59,130,246,.2);border-radius:16px;width:100%;max-width:360px;overflow:hidden">
     <div style="height:3px;background:linear-gradient(90deg,#2563EB,#8B5CF6)"></div>
     <div style="padding:28px 24px">
@@ -2553,10 +2553,6 @@ function setBtn(id, loading, label='Salvar') {
 }
 
 let SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
-// Modo em memória — nunca persiste entre sessões
-let MODO_ATUAL = 'funcionario';
-// Garantir que modo nunca vem de sessão anterior
-try { delete window.__modoAdmin; } catch(e) {}
 
 // Tutorial removido — funções stub para evitar erros
 function miniTutMostrar(secao) {}
@@ -2566,7 +2562,7 @@ function verTutorialSecao(secao) {}
 
 function nav(id, el) {
   // Bloqueia páginas admin se não estiver autenticado
-  if (ADMIN_PAGES.includes(id) && MODO_ATUAL !== 'admin') {
+  if (ADMIN_PAGES.includes(id) && localStorage.getItem('nexus360_modo') !== 'admin') {
     toast('Acesso restrito — faça login como Admin', 'error');
     const primario = document.querySelector('.nav-item[data-role="todos"]');
     if (primario && !primario.classList.contains('active')) primario.click();
@@ -2793,10 +2789,6 @@ function applyConfig() {
     } catch(e) { console.warn('fcfg parse error:', e); }
   }
   // Salva data de início do ranking no state
-  // Carregar ranking_config do Supabase no localStorage para uso local
-  if (c.ranking_config) {
-    try { localStorage.setItem('nexus360_rm_config', c.ranking_config); } catch(e) {}
-  }
   // Carregar senha admin do Supabase
   if (c.senha_admin) {
     SENHA_ADMIN = c.senha_admin;
@@ -2878,7 +2870,7 @@ function renderDashboard() {
   renderInsightsFunc();
   verificarImportacao();
   // Re-aplica modo para garantir visibilidade correta após dados carregarem
-  aplicarModo('funcionario');
+  aplicarModo(localStorage.getItem('nexus360_modo') || 'funcionario');
 }
 
 function renderBarChart() {
@@ -3633,7 +3625,7 @@ function renderClients(list) {
   }
 
   const isMobile = window.innerWidth <= 768;
-  const isAdmin  = MODO_ATUAL === 'admin';
+  const isAdmin  = localStorage.getItem('nexus360_modo') === 'admin';
   const gastoNum = c => parseFloat(String(c.total_gasto||'0').replace(/[^\d.]/g,''))||0;
   const todosOrdenados = [...state.clientes].sort((a,b)=>gastoNum(b)-gastoNum(a));
   const totalTodos = todosOrdenados.length;
@@ -3776,7 +3768,7 @@ function recuperarInativos() {
 }
 
 function filterClients() {
-  const isAdmin = MODO_ATUAL === 'admin';
+  const isAdmin = localStorage.getItem('nexus360_modo') === 'admin';
 
   // Thead dinâmico — alinha com tbody
   const thead = document.getElementById('clientTableHead');
@@ -3868,7 +3860,7 @@ function toggleVendaRapida() {
 
 function _verificarLimiteVenda(valor) {
   const mx = parseFloat(state.config?.max_venda_func) || 0;
-  if (mx > 0 && MODO_ATUAL !== 'admin' && parseFloat(valor) > mx) {
+  if (mx > 0 && localStorage.getItem('nexus360_modo') !== 'admin' && parseFloat(valor) > mx) {
     toast('Valor R$ ' + parseFloat(valor).toFixed(2) + ' acima do limite de R$ ' + mx.toFixed(2) + ' para funcionário. Solicite ao admin.', 'error');
     return true;
   }
@@ -4421,7 +4413,7 @@ async function saveCliente() {
     const conf = confirm('Já existe um cliente com o nome "' + dupNome.nome + '". Deseja cadastrar mesmo assim?');
     if (!conf) { setBtn('btnSaveCliente', false); return; }
   }
-  const isAdmin = MODO_ATUAL === 'admin';
+  const isAdmin = localStorage.getItem('nexus360_modo') === 'admin';
   const clienteExistente = id ? state.clientes.find(c => String(c.id) === String(id)) : null;
   const payload = {
     nome,
@@ -4788,7 +4780,7 @@ function renderVendas() {
     const num     = tel ? (tel.startsWith('55') ? tel : '55'+tel) : '';
     const neg     = state.config?.nome_negocio || 'nossa loja';
     const btnWpp  = num ? `<button class="btn-wpp" style="font-size:11px;padding:3px 8px;border-radius:5px;border:none;cursor:pointer" onclick="abrirModalWppVenda(${v.id})">WA</button>` : '';
-    const btnDel  = MODO_ATUAL === 'admin' ? `<button class="btn btn-red" style="padding:4px 8px;font-size:11px;margin-left:4px" onclick="deleteVenda(${v.id})">Excluir</button>` : '';
+    const btnDel  = localStorage.getItem('nexus360_modo') === 'admin' ? `<button class="btn btn-red" style="padding:4px 8px;font-size:11px;margin-left:4px" onclick="deleteVenda(${v.id})">Excluir</button>` : '';
     return `<tr>
       <td style="color:var(--text1)">${nome}</td>
       <td style="color:var(--text2)">R$ ${parseFloat(v.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
@@ -5394,7 +5386,7 @@ function renderItens() {
           <div style="font-size:13px;color:var(--text1)">${i.nome}</div>
           <div style="font-size:11px;color:var(--text3)">${tipo==='zero'?'Sem estoque':'Estoque baixo: '+i.estoque+' un'}</div>
         </div>
-        ${MODO_ATUAL === 'admin' ? '<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="abrirReposicao('+i.id+')">Repor estoque</button>' : ''}
+        ${localStorage.getItem('nexus360_modo') === 'admin' ? '<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="abrirReposicao('+i.id+')">Repor estoque</button>' : ''}
       </div>`).join('');
   }
 
@@ -5425,7 +5417,7 @@ function renderItens() {
       <td>${estTxt}</td>
       <td>${giroHtml}</td>
       <td style="display:flex;gap:6px">
-        ${MODO_ATUAL === 'admin' ? `<button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editItem(${i.id})">Editar</button>
+        ${localStorage.getItem('nexus360_modo') === 'admin' ? `<button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editItem(${i.id})">Editar</button>
         <button class="btn btn-red" style="padding:4px 8px;font-size:11px" onclick="deleteItem(${i.id},'${(i.nome||'').replace(/'/g,"\'")}')">Excluir</button>` : ''}
       </td>
     </tr>`;
@@ -5923,12 +5915,6 @@ function rmAdicionarPontos(cliId, pts) {
 }
 
 function rmGetConfig() {
-  // Supabase (state.config) tem prioridade sobre localStorage
-  try {
-    if (state.config && state.config.ranking_config) {
-      return JSON.parse(state.config.ranking_config);
-    }
-  } catch(e) {}
   return JSON.parse(localStorage.getItem('nexus360_rm_config') || JSON.stringify({
     p1: { desc:'Kit de produtos', bonus:200 },
     p2: { desc:'Vale compras', bonus:100 },
@@ -5937,7 +5923,7 @@ function rmGetConfig() {
   }));
 }
 
-async function rmSalvarConfig() {
+function rmSalvarConfig() {
   const get = id => { const el = document.getElementById(id); return el ? el.value : ''; };
   const cfg = {
     p1: { desc:  get('rm-premio1-desc') || 'Kit de produtos',
@@ -5949,12 +5935,6 @@ async function rmSalvarConfig() {
     duracao: parseInt(get('rm-duracao')) || 1,
   };
   try { localStorage.setItem('nexus360_rm_config', JSON.stringify(cfg)); } catch(e) {}
-  // Salvar no Supabase
-  if (state.companyId) {
-    const { error } = await db.from('configuracoes')
-      .upsert({ company_id: state.companyId, ranking_config: JSON.stringify(cfg) }, { onConflict: 'company_id' });
-    if (error) { toast('Erro ao salvar no servidor: ' + error.message, 'error'); return; }
-  }
   toast('Prêmios configurados!', 'success');
   renderRankingMensal();
 }
@@ -7806,7 +7786,7 @@ function alterarSenhaAdmin() {
   // Salvar no Supabase também
   if (state.companyId) {
     db.from('configuracoes').upsert({ company_id: state.companyId, senha_admin: nova }, { onConflict: 'company_id' })
-      .then(({ error }) => { if (error) console.warn('Erro ao salvar senha no Supabase:', error.message); });
+      .then(({ error }) => { if (error) console.warn('Erro ao salvar senha:', error.message); });
   }
   document.getElementById('cfg-senha-atual').value = '';
   document.getElementById('cfg-senha-nova').value  = '';
@@ -8392,27 +8372,18 @@ function aplicarModo(modo) {
   }
 }
 
-function abrirModalSenhaAdminMobile() {
-  mClose(); // fecha o drawer mobile
-  setTimeout(() => abrirModalSenhaAdmin(), 150); // abre modal de senha após fechar drawer
-}
-
 function abrirModalSenhaAdmin() {
-  // Se já está em modo admin, volta para funcionário sem pedir senha
-  if (MODO_ATUAL === 'admin') {
+  // Se já está em modo admin, só volta para funcionário
+  if (localStorage.getItem('nexus360_modo') === 'admin') {
     definirModo('funcionario'); return;
   }
-  // Sempre mostra o modal para entrar como admin
   const modal = document.getElementById('modalSenhaAdmin');
   const input = document.getElementById('modalSenhaAdmin-input');
   const erro  = document.getElementById('modalSenhaAdmin-erro');
-  if (!modal) { console.error('Modal não encontrado'); return; }
   erro.style.display = 'none';
   input.value = '';
   modal.style.display = 'flex';
-  modal.style.alignItems = 'center';
-  modal.style.justifyContent = 'center';
-  setTimeout(() => { try { input.focus(); } catch(e) {} }, 200);
+  setTimeout(() => input.focus(), 100);
 }
 
 function fecharModalSenhaAdmin() {
@@ -8440,11 +8411,6 @@ function confirmarSenhaAdmin() {
   }
   fecharModalSenhaAdmin();
   definirModo('admin');
-  // Forçar navegação para dashboard admin
-  setTimeout(() => {
-    const dashNav = document.querySelector('.nav-item[onclick*="dashboard"]');
-    if (dashNav) dashNav.click();
-  }, 100);
 }
 
 function recuperarSenhaAdmin() {
@@ -8455,32 +8421,13 @@ function recuperarSenhaAdmin() {
 }
 
 function definirModo(modo) {
-  MODO_ATUAL = modo;
+  localStorage.setItem('nexus360_modo', modo);
   aplicarModo(modo);
-  // Sincronizar botões do drawer mobile
-  const mBtnFunc = document.getElementById('mBtnFunc');
-  const mBtnAdmin = document.getElementById('mBtnAdmin');
-  if (mBtnFunc) mBtnFunc.classList.toggle('active', modo !== 'admin');
-  if (mBtnAdmin) mBtnAdmin.classList.toggle('active', modo === 'admin');
   if (modo !== 'admin') { const vr = document.getElementById('vendaRapidaBar'); if(vr) vr.style.display='none'; }
-  // Re-renderizar todas as telas para aplicar permissões
   if(typeof filterClients==='function') filterClients();
   if(typeof renderVendas==='function') renderVendas();
   if(typeof renderItens==='function') renderItens();
   if(typeof renderDashboard==='function') renderDashboard();
-  if(typeof renderCampanhas==='function') renderCampanhas();
-  if(typeof renderEntregas==='function') renderEntregas();
-  if(typeof renderFuncionarios==='function') renderFuncionarios();
-  if(typeof renderCobranças==='function') renderCobranças();
-  if(typeof renderCobrancas==='function') renderCobrancas();
-  if(typeof renderCrm==='function') renderCrm();
-  if(typeof renderRelatorios==='function') renderRelatorios();
-  if(typeof renderConfig==='function') renderConfig();
-  // Navegar para a página atual para forçar re-render completo
-  setTimeout(() => {
-    const pagina = state.currentPage || 'dashboard';
-    if(typeof nav==='function') nav(pagina);
-  }, 100);
   toast(modo === 'admin' ? 'Modo Admin ativado' : 'Modo Funcionário ativado', 'success');
 }
 
@@ -8520,7 +8467,7 @@ function _chatAdicionarMsg(tipo, texto) {
 
 function _chatContexto() {
   const paginaAtual    = localStorage.getItem('nexus360_pagina') || 'dashboard';
-  const modo           = 'funcionario';
+  const modo           = localStorage.getItem('nexus360_modo') || 'funcionario';
   const totalClientes  = state.clientes.length;
   const inativos       = state.clientes.filter(c => c.status === 'inativo').length;
   const vips           = state.clientes.filter(c => c.status === 'vip').length;
@@ -9444,7 +9391,7 @@ async function iniciarSistema() {
   }
 
   esconderTelaLogin();
-  aplicarModo('funcionario');
+  aplicarModo(localStorage.getItem('nexus360_modo') || 'funcionario');
   fcfgAplicar(fcfgGet());
   await checkConnection();
   if (state.connected) {
@@ -11878,7 +11825,7 @@ function rsvWppEnviar() {
   <div class="md-bottom">
     <div class="md-modes">
       <button class="md-mode-btn" id="mBtnFunc" onclick="definirModo('funcionario');mClose()">Funcionário</button>
-      <button class="md-mode-btn" id="mBtnAdmin" onclick="abrirModalSenhaAdminMobile()">Admin</button>
+      <button class="md-mode-btn" id="mBtnAdmin" onclick="definirModo('admin');mClose()">Admin</button>
     </div>
   </div>
 </div>
@@ -11898,7 +11845,7 @@ function rsvWppEnviar() {
 function mOpen() {
   document.getElementById('mDrawer').classList.add('open');
   document.getElementById('mOverlay').classList.add('open');
-  const modo = (typeof MODO_ATUAL !== 'undefined') ? MODO_ATUAL : 'funcionario';
+  const modo = localStorage.getItem('nexus360_modo') || 'funcionario';
   document.getElementById('mBtnFunc').classList.toggle('active', modo !== 'admin');
   document.getElementById('mBtnAdmin').classList.toggle('active', modo === 'admin');
   mSyncDrawerNav();
@@ -11942,7 +11889,7 @@ function mNav(page) {
 }
 
 function mSyncDrawerNav() {
-  const modo = 'funcionario';
+  const modo = localStorage.getItem('nexus360_modo') || 'funcionario';
   const isAdmin = modo === 'admin';
   // Pages only for admin
   const adminOnly = ['campanhas','crm','devedores','calendario','relatorios','config','funcionarios'];
