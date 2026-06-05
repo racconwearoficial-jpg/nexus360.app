@@ -11826,7 +11826,7 @@ function rsvWppEnviar() {
   <div class="md-bottom">
     <div class="md-modes">
       <button class="md-mode-btn" id="mBtnFunc" onclick="definirModo('funcionario');mClose()">Funcionário</button>
-      <button class="md-mode-btn" id="mBtnAdmin" onclick="definirModo('admin');mClose()">Admin</button>
+      <button class="md-mode-btn" id="mBtnAdmin" onclick="mClose();setTimeout(()=>abrirModalSenhaAdmin(),200)">Admin</button>
     </div>
   </div>
 </div>
