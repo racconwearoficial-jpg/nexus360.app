@@ -8463,10 +8463,24 @@ function definirModo(modo) {
   if (mBtnFunc) mBtnFunc.classList.toggle('active', modo !== 'admin');
   if (mBtnAdmin) mBtnAdmin.classList.toggle('active', modo === 'admin');
   if (modo !== 'admin') { const vr = document.getElementById('vendaRapidaBar'); if(vr) vr.style.display='none'; }
+  // Re-renderizar todas as telas para aplicar permissões
   if(typeof filterClients==='function') filterClients();
   if(typeof renderVendas==='function') renderVendas();
   if(typeof renderItens==='function') renderItens();
   if(typeof renderDashboard==='function') renderDashboard();
+  if(typeof renderCampanhas==='function') renderCampanhas();
+  if(typeof renderEntregas==='function') renderEntregas();
+  if(typeof renderFuncionarios==='function') renderFuncionarios();
+  if(typeof renderCobranças==='function') renderCobranças();
+  if(typeof renderCobrancas==='function') renderCobrancas();
+  if(typeof renderCrm==='function') renderCrm();
+  if(typeof renderRelatorios==='function') renderRelatorios();
+  if(typeof renderConfig==='function') renderConfig();
+  // Navegar para a página atual para forçar re-render completo
+  setTimeout(() => {
+    const pagina = state.currentPage || 'dashboard';
+    if(typeof nav==='function') nav(pagina);
+  }, 100);
   toast(modo === 'admin' ? 'Modo Admin ativado' : 'Modo Funcionário ativado', 'success');
 }
 
