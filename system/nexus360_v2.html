@@ -2789,6 +2789,13 @@ function applyConfig() {
     } catch(e) { console.warn('fcfg parse error:', e); }
   }
   // Salva data de início do ranking no state
+  // Carregar senha admin do Supabase
+  if (c.senha_admin) {
+    SENHA_ADMIN = c.senha_admin;
+    localStorage.setItem('nexus360_senha_admin', c.senha_admin);
+  } else {
+    SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
+  }
   state.rankingInicio   = c.ranking_inicio   || null;
   // Prioriza localStorage (salvo localmente ao encerrar) sobre Supabase
   // pois ranking_inicio_ts pode não existir como coluna no Supabase
@@ -7776,6 +7783,11 @@ function alterarSenhaAdmin() {
   if (nova.length < 4) { toast('Nova senha deve ter pelo menos 4 caracteres', 'error'); return; }
   SENHA_ADMIN = nova;
   try { localStorage.setItem('nexus360_senha_admin', nova); } catch(e) {}
+  // Salvar no Supabase também
+  if (state.companyId) {
+    db.from('configuracoes').upsert({ company_id: state.companyId, senha_admin: nova }, { onConflict: 'company_id' })
+      .then(({ error }) => { if (error) console.warn('Erro ao salvar senha no Supabase:', error.message); });
+  }
   document.getElementById('cfg-senha-atual').value = '';
   document.getElementById('cfg-senha-nova').value  = '';
   document.getElementById('cfg-senha-conf').value  = '';
@@ -7790,6 +7802,7 @@ async function saveConfig() {
     dias_inativo:     parseInt(document.getElementById('cfg-inativo').value) || 30,
     expira_pontos:    parseInt(document.getElementById('cfg-expira-pontos').value) || 365,
     max_venda_func:   parseFloat(document.getElementById('cfg-max-venda-func').value) || null,
+    senha_admin:      SENHA_ADMIN || 'admin123',
     ranking_inicio:    state.rankingInicio   || null,
     ranking_inicio_ts: state.rankingInicioTs  || 0,
     msg_reativacao:   document.getElementById('cfg-msg-reativacao').value.trim() || null,
