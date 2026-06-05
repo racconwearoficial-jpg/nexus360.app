@@ -1782,6 +1782,79 @@ footer {
   </div>
 </div>
 
+<!-- TABELA COMPARAÇÃO DE VALOR -->
+<section style="padding:80px 24px;max-width:700px;margin:0 auto">
+  <div class="reveal">
+    <div class="section-label" style="text-align:center">Por que R$99,90?</div>
+    <div class="section-title" style="text-align:center">Veja o que você está recebendo</div>
+    <div class="section-sub" style="text-align:center;margin:0 auto 40px">Cada funcionalidade do Nexus360 custaria centenas de reais por mês se contratada separadamente.</div>
+
+    <div style="background:var(--bg1);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+
+      <!-- Header -->
+      <div style="display:grid;grid-template-columns:1fr auto auto;gap:0;background:var(--bg2);padding:14px 24px;border-bottom:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3)">Funcionalidade</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);text-align:center;min-width:120px">Custo separado</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);text-align:center;min-width:100px">Nexus360</div>
+      </div>
+
+      <!-- Linhas -->
+      <div id="comp-rows">
+      </div>
+
+      <!-- Total -->
+      <div style="display:grid;grid-template-columns:1fr auto auto;gap:0;background:rgba(59,130,246,.06);padding:18px 24px;border-top:2px solid rgba(59,130,246,.2)">
+        <div style="font-size:15px;font-weight:800;color:var(--text1)">Total</div>
+        <div style="text-align:center;min-width:120px">
+          <span style="font-size:15px;font-weight:700;color:var(--text3);text-decoration:line-through">R$730/mês</span>
+        </div>
+        <div style="text-align:center;min-width:100px">
+          <span style="font-size:17px;font-weight:800;color:var(--blue)">R$99,90</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--text3)">
+      Economia de mais de <strong style="color:#10B981">R$630/mês</strong> — tudo em um só sistema.
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  const rows = [
+    { nome: 'CRM de clientes', custo: 'R$200/mês' },
+    { nome: 'Programa de fidelidade e pontos', custo: 'R$150/mês' },
+    { nome: 'Campanhas WhatsApp personalizadas', custo: 'R$100/mês' },
+    { nome: 'Controle de cobranças e fiado', custo: 'R$80/mês' },
+    { nome: 'Calendário e agendamentos', custo: 'R$50/mês' },
+    { nome: 'Relatórios e análises', custo: 'R$100/mês' },
+    { nome: 'Ranking e engajamento de clientes', custo: 'R$50/mês' },
+  ];
+
+  const container = document.getElementById('comp-rows');
+  if (!container) return;
+
+  container.innerHTML = rows.map((r, i) => `
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:0;padding:14px 24px;border-bottom:1px solid var(--border);background:${i%2===0?'transparent':'rgba(255,255,255,.02)'}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span style="font-size:14px;color:var(--text1)">${r.nome}</span>
+      </div>
+      <div style="text-align:center;min-width:120px;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:13px;color:var(--text3);text-decoration:line-through">${r.custo}</span>
+      </div>
+      <div style="text-align:center;min-width:100px;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:12px;font-weight:700;color:#10B981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);padding:3px 10px;border-radius:20px">Incluso</span>
+      </div>
+    </div>
+  `).join('');
+})();
+</script>
+
 <!-- PRICING -->
 <section class="pricing-section" id="preco">
   <div class="pricing-inner reveal">
