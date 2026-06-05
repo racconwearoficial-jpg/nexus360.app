@@ -2553,6 +2553,8 @@ function setBtn(id, loading, label='Salvar') {
 }
 
 let SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
+// Sempre começa como funcionário — admin só via senha
+localStorage.setItem('nexus360_modo', 'funcionario');
 
 // Tutorial removido — funções stub para evitar erros
 function miniTutMostrar(secao) {}
@@ -2874,7 +2876,7 @@ function renderDashboard() {
   renderInsightsFunc();
   verificarImportacao();
   // Re-aplica modo para garantir visibilidade correta após dados carregarem
-  aplicarModo(localStorage.getItem('nexus360_modo') || 'funcionario');
+  aplicarModo('funcionario');
 }
 
 function renderBarChart() {
@@ -9407,8 +9409,6 @@ async function iniciarSistema() {
   }
 
   esconderTelaLogin();
-  // Sempre começa como funcionário — precisa digitar senha para virar admin
-  localStorage.setItem('nexus360_modo', 'funcionario');
   aplicarModo('funcionario');
   fcfgAplicar(fcfgGet());
   await checkConnection();
