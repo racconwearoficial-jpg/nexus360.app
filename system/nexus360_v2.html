@@ -446,7 +446,7 @@ input:checked+.slider:before{transform:translateX(18px);background:#fff}
 </div>
 
 <!-- MODAL SENHA ADMIN -->
-<div id="modalSenhaAdmin" style="display:none;position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px">
+<div id="modalSenhaAdmin" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;touch-action:none">
   <div style="background:#0D1829;border:1px solid rgba(59,130,246,.2);border-radius:16px;width:100%;max-width:360px;overflow:hidden">
     <div style="height:3px;background:linear-gradient(90deg,#2563EB,#8B5CF6)"></div>
     <div style="padding:28px 24px">
@@ -2555,6 +2555,8 @@ function setBtn(id, loading, label='Salvar') {
 let SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
 // Modo em memória — nunca persiste entre sessões
 let MODO_ATUAL = 'funcionario';
+// Garantir que modo nunca vem de sessão anterior
+try { delete window.__modoAdmin; } catch(e) {}
 
 // Tutorial removido — funções stub para evitar erros
 function miniTutMostrar(secao) {}
@@ -8396,17 +8398,21 @@ function abrirModalSenhaAdminMobile() {
 }
 
 function abrirModalSenhaAdmin() {
-  // Se já está em modo admin, só volta para funcionário
+  // Se já está em modo admin, volta para funcionário sem pedir senha
   if (MODO_ATUAL === 'admin') {
     definirModo('funcionario'); return;
   }
+  // Sempre mostra o modal para entrar como admin
   const modal = document.getElementById('modalSenhaAdmin');
   const input = document.getElementById('modalSenhaAdmin-input');
   const erro  = document.getElementById('modalSenhaAdmin-erro');
+  if (!modal) { console.error('Modal não encontrado'); return; }
   erro.style.display = 'none';
   input.value = '';
   modal.style.display = 'flex';
-  setTimeout(() => input.focus(), 100);
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  setTimeout(() => { try { input.focus(); } catch(e) {} }, 200);
 }
 
 function fecharModalSenhaAdmin() {
