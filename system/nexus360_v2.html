@@ -8390,6 +8390,11 @@ function aplicarModo(modo) {
   }
 }
 
+function abrirModalSenhaAdminMobile() {
+  mClose(); // fecha o drawer mobile
+  setTimeout(() => abrirModalSenhaAdmin(), 150); // abre modal de senha após fechar drawer
+}
+
 function abrirModalSenhaAdmin() {
   // Se já está em modo admin, só volta para funcionário
   if (MODO_ATUAL === 'admin') {
@@ -11843,7 +11848,7 @@ function rsvWppEnviar() {
   <div class="md-bottom">
     <div class="md-modes">
       <button class="md-mode-btn" id="mBtnFunc" onclick="definirModo('funcionario');mClose()">Funcionário</button>
-      <button class="md-mode-btn" id="mBtnAdmin" onclick="definirModo('admin');mClose()">Admin</button>
+      <button class="md-mode-btn" id="mBtnAdmin" onclick="abrirModalSenhaAdminMobile()">Admin</button>
     </div>
   </div>
 </div>
