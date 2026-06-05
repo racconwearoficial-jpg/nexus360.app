@@ -2562,7 +2562,7 @@ function verTutorialSecao(secao) {}
 
 function nav(id, el) {
   // Bloqueia páginas admin se não estiver autenticado
-  if (ADMIN_PAGES.includes(id) && localStorage.getItem('nexus360_modo') !== 'admin') {
+  if (ADMIN_PAGES.includes(id) && (typeof MODO_ATUAL === 'undefined' || MODO_ATUAL !== 'admin')) {
     toast('Acesso restrito — faça login como Admin', 'error');
     const primario = document.querySelector('.nav-item[data-role="todos"]');
     if (primario && !primario.classList.contains('active')) primario.click();
