@@ -11174,7 +11174,11 @@ function calEventsForWeek(startDate) {
 }
 
 function calDateStr(d) {
-  return d.toISOString().split('T')[0];
+  // Usar data local (não UTC) para evitar problemas de fuso horário
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
 }
 
 function calSetView(v) {
