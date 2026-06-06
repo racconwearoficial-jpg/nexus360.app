@@ -6996,13 +6996,22 @@ async function verificarIndicacaoPorCliente(cliente) {
 
 async function indVerificarIndicacao(indId) {
   try {
-    const { data: indicacoes } = await db.from('indicacoes')
+    // Se chamado com ID de cliente (do fidRegistrarCompra), busca por amigo_id
+    // Se chamado com ID de indicação (do botão Validar), busca por id
+    const { data: indicacoesPorCliente } = await db.from('indicacoes')
+      .select('*')
+      .eq('company_id', state.companyId)
+      .eq('amigo_id', indId)
+      .eq('status', 'pendente');
+
+    const { data: indicacoesPorId } = await db.from('indicacoes')
       .select('*')
       .eq('company_id', state.companyId)
       .eq('id', indId)
       .eq('status', 'pendente');
-    const ind = indicacoes?.[0];
-    if (!ind) { toast('Indicação não encontrada ou já validada', 'error'); return; }
+
+    const ind = indicacoesPorCliente?.[0] || indicacoesPorId?.[0];
+    if (!ind) return; // Silencioso — cliente pode não ter sido indicado
 
     const indPts = window.FCFG_IND_PTS || 40;
     let amigoId = ind.amigo_id;
