@@ -2809,6 +2809,12 @@ function applyConfig() {
   } else {
     SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
   }
+  if (c.senha_admin) {
+    SENHA_ADMIN = c.senha_admin;
+    localStorage.setItem('nexus360_senha_admin', c.senha_admin);
+  } else {
+    SENHA_ADMIN = localStorage.getItem('nexus360_senha_admin') || 'admin123';
+  }
   state.rankingInicio   = c.ranking_inicio   || null;
   // Prioriza localStorage (salvo localmente ao encerrar) sobre Supabase
   // pois ranking_inicio_ts pode não existir como coluna no Supabase
@@ -6458,9 +6464,19 @@ async function fidRegistrarCompra() {
     cli.total_gasto = (parseFloat(cli.total_gasto)||0) + val;
     cli.status      = novoStatus;
 
-    // Adiciona venda ao state para ranking atualizar imediatamente
+    // Salvar venda no Supabase para ranking mensal atualizar corretamente
     const hoje = new Date().toISOString().split('T')[0];
-    state.vendas.unshift({ id: Date.now(), cliente_id: parseInt(cliId), valor: val, data: hoje });
+    const vendaObj = {
+      company_id:  state.companyId,
+      cliente_id:  parseInt(cliId),
+      valor:       val,
+      data:        hoje,
+      categoria:   _catSel || null,
+      itens:       'Registrado via Fidelidade',
+      funcionario: null
+    };
+    const { data: vendaSalva } = await db.from('vendas').insert(vendaObj).select().single();
+    state.vendas.unshift(vendaSalva || { ...vendaObj, id: Date.now() });
 
     if (msgVip)        setTimeout(() => toast(msgVip, 'success'), 600);
     if (mensagemBonus) setTimeout(() => toast(mensagemBonus, 'success'), 300);
@@ -7815,6 +7831,7 @@ async function saveConfig() {
     dias_inativo:     parseInt(document.getElementById('cfg-inativo').value) || 30,
     expira_pontos:    parseInt(document.getElementById('cfg-expira-pontos').value) || 365,
     max_venda_func:   parseFloat(document.getElementById('cfg-max-venda-func').value) || null,
+    senha_admin:      SENHA_ADMIN || 'admin123',
     senha_admin:      SENHA_ADMIN || 'admin123',
     senha_admin:      SENHA_ADMIN || 'admin123',
     senha_admin:      SENHA_ADMIN || 'admin123',
