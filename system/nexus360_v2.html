@@ -8675,7 +8675,7 @@ async function rsvInit() {
 }
 
 function rsvPopularSelects() {
-  var clis = state.clientes.filter(function(c) { return c.status !== 'inativo'; })
+  var clis = state.clientes.slice()
     .sort(function(a,b) { return a.nome.localeCompare(b.nome); });
   var prods = state.itens.slice().sort(function(a,b) { return a.nome.localeCompare(b.nome); });
 
