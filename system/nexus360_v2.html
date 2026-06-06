@@ -6486,6 +6486,7 @@ async function fidRegistrarCompra() {
     document.getElementById('fid-pontos-preview').style.display = 'none';
     fidSelecionarCliente(cliId, cli.nome, cli.telefone, novosPontos);
     renderFidelidade();
+    renderRankingMensal();
     await indVerificarIndicacao(cliId);
   } catch(e) { toast('Erro: ' + e.message, 'error'); }
 }
