@@ -322,11 +322,11 @@ input:checked+.slider:before{transform:translateX(18px);background:#fff}
       <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 2L11 13" stroke-width="2"/><path d="M22 2L15 22 11 13 2 9l20-7z" stroke-width="2"/></svg>
       Campanhas
     </div>
-    <div class="nav-item" onclick="nav('fidelidade',this)" data-role="admin">
+    <div class="nav-item" onclick="nav('fidelidade',this)" data-role="todos">
       <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke-width="2"/></svg>
       Fidelidade
     </div>
-    <div class="nav-item" onclick="nav('indicacao',this)" data-role="admin">
+    <div class="nav-item" onclick="nav('indicacao',this)" data-role="todos">
       <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="2"/><circle cx="9" cy="7" r="4" stroke-width="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke-width="2"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke-width="2"/></svg>
       Indicação
     </div>
@@ -346,14 +346,7 @@ input:checked+.slider:before{transform:translateX(18px);background:#fff}
       <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1" stroke-width="2"/><path d="M16 8h4l3 5v4h-7V8z" stroke-width="2"/><circle cx="5.5" cy="18.5" r="2.5" stroke-width="2"/><circle cx="18.5" cy="18.5" r="2.5" stroke-width="2"/></svg>
       Entregas
     </div>
-    <div class="nav-item" onclick="nav('fidelidade-func',this)" data-role="funcionario">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke-width="2"/></svg>
-      Fidelidade
-    </div>
-    <div class="nav-item" onclick="nav('indicacao',this)" data-role="funcionario">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="2"/><circle cx="9" cy="7" r="4" stroke-width="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke-width="2"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke-width="2"/></svg>
-      Indicação
-    </div>
+    <!-- Fidelidade e Indicação do funcionário foram unificadas na página principal de Fidelidade (data-role="todos") -->
     <div class="nav-item" onclick="nav('reservas',this)" data-role="todos" id="nav-reservas">
       <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="2"/><line x1="8" y1="14" x2="8" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="14" x2="16" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="18" x2="8" y2="18" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="18" x2="16" y2="18" stroke-width="2" stroke-linecap="round"/></svg>
       Reservas <span id="nav-reservas-badge" style="display:none;background:#ef4444;color:#fff;border-radius:20px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px;vertical-align:middle"></span>
@@ -362,7 +355,7 @@ input:checked+.slider:before{transform:translateX(18px);background:#fff}
       <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/><line x1="2" y1="10" x2="22" y2="10" stroke-width="2"/><line x1="6" y1="15" x2="10" y2="15" stroke-width="2" stroke-linecap="round"/></svg>
       Cobranças <span id="nav-devedores-badge" style="display:none;background:#ef4444;color:#fff;border-radius:20px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px;vertical-align:middle"></span>
     </div>
-    <div class="nav-item" onclick="nav('calendario',this)" data-role="admin">
+    <div class="nav-item" onclick="nav('calendario',this)" data-role="todos">
       <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="2"/></svg>
       Calendário
     </div>
@@ -2527,7 +2520,7 @@ const pageNames = {
   relatorios:'Relatórios', config:'Configurações', funcionarios:'Funcionários'
 };
 
-const ADMIN_PAGES = ['fidelidade','crm','relatorios','config','funcionarios','devedores','calendario'];
+const ADMIN_PAGES = ['crm','relatorios','config','funcionarios','devedores'];
 // ══════════════════════════════════════════════════════════════════════════════
 // UI HELPERS
 // ══════════════════════════════════════════════════════════════════════════════
