@@ -2835,7 +2835,8 @@ function renderDashboard() {
   const itens     = state.itens;
 
   const receitaTotal = vendas.reduce((s, v) => s + parseFloat(v.valor || 0), 0);
-  const hoje         = new Date().toISOString().split('T')[0];
+  const _hojeD = new Date();
+  const hoje         = `${_hojeD.getFullYear()}-${String(_hojeD.getMonth()+1).padStart(2,'0')}-${String(_hojeD.getDate()).padStart(2,'0')}`;
   const receitaHoje  = vendas.filter(v => v.data === hoje).reduce((s, v) => s + parseFloat(v.valor || 0), 0);
   const ticket       = vendas.length ? receitaTotal / vendas.length : 0;
   const limiteInativo = new Date(); limiteInativo.setDate(limiteInativo.getDate() - diasInativo());
